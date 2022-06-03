@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import EmployeeService from '../services/EmployeeService';
 
 class CreateEmployeeComponent extends Component {
@@ -6,6 +7,8 @@ class CreateEmployeeComponent extends Component {
         super(props)
 
         this.state = {
+            // step 2
+            id: this.props.match.params.id,
             firstName: '',
             lastName: '',
             emailID: ''        
@@ -13,8 +16,25 @@ class CreateEmployeeComponent extends Component {
 
         this.changeFirstNameHandler = this.changeFirstNameHandler.bind(this);
         this.changeLastNameHandler = this.changeLastNameHandler.bind(this);
-        // this.changeEmailHandler = this.changeEmailHandler.bind(this);
-        this.saveEmployee = this.saveEmployee.bind(this);
+        this.changeEmailHandler = this.changeEmailHandler.bind(this);
+        this.saveOrUpdateEmployee = this.saveOrUpdateEmployee.bind(this);
+        this.cancel = this.cancel.bind(this);
+    }
+
+    // step 3
+    componentDidMount() {
+        // step 4
+        if (this.state.id == -1) {
+            return
+        } else {
+            EmployeeService.getEmployeeById(this.state.id).then(res => {
+                let employee = res.data;
+                this.setState({firstName: employee.firstName,
+                    lastName: employee.lastName,
+                    emailID: employee.emailID
+                })
+            });
+        }
     }
 
     changeFirstNameHandler = (event) => {
@@ -29,18 +49,33 @@ class CreateEmployeeComponent extends Component {
         this.setState({emailID: event.target.value});
     }
 
-    saveEmployee = (e) => {
+    saveOrUpdateEmployee = (e) => {
         e.preventDefault();
         let employee = {firstName: this.state.firstName, lastName: this.state.lastName, emailID: this.state.emailID};
         console.log("employee => " + JSON.stringify(employee));
 
-        EmployeeService.createEmployee(employee).then(res => {
-            this.props.history.push("/employees");
-        })
+        // step 5
+        if (this.state.id == -1) {
+            EmployeeService.createEmployee(employee).then(res => {
+                this.props.navigate(`/employees`);
+            });
+        } else {
+            EmployeeService.updateEmployee(employee, this.state.id).then(res => {
+                this.props.navigate(`/employees`);
+            });
+        }
     }
 
     cancel() {
-        this.props.history.push("/employees");
+        this.props.navigate(`/employees`);
+    }
+
+    getTitle() {
+        if (this.state.id == -1) {
+            return <h3 className="text-center">Add Employee</h3>
+        } else {
+            return <h3 className="text-center">Update Employee</h3>
+        }
     }
 
     render() {
@@ -49,7 +84,9 @@ class CreateEmployeeComponent extends Component {
                 <div className="container">
                     <div className="row">
                         <div className="card col-md-6 offset-md-3 offset-md-3">
-                            <h3 className="text-center">Add Employee</h3>
+                            {
+                                this.getTitle()
+                            }
                             <div className="card-body">
                                 <form>
                                     <div className="form-group">
@@ -68,7 +105,7 @@ class CreateEmployeeComponent extends Component {
                                             value={this.state.emailID} onChange={this.changeEmailHandler} />
                                     </div>
 
-                                    <button className="btn btn-success" onClick={this.saveEmployee}>Save</button>
+                                    <button className="btn btn-success" onClick={this.saveOrUpdateEmployee}>Save</button>
                                     <button className="btn btn-danger" onClick={this.cancel.bind(this)} style={{marginLeft:"10px"}}>Cancel</button>
                                 </form>
                             </div>
@@ -80,4 +117,12 @@ class CreateEmployeeComponent extends Component {
     }
 }
 
-export default CreateEmployeeComponent;
+function WithNavigate(props) {
+    let navigate = useNavigate();
+    let match = {params: useParams()};
+    return <CreateEmployeeComponent {...props} navigate={navigate} match={match} />
+}
+
+export default WithNavigate;
+
+// export default CreateEmployeeComponent;

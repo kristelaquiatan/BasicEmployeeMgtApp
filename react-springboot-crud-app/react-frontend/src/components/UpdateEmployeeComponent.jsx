@@ -6,7 +6,7 @@ class UpdateEmployeeComponent extends Component {
         super(props)
 
         this.state = {
-            // id: this.props.match.params.id,
+            id: this.props.match.params.id,
             firstName: '',
             lastName: '',
             emailID: ''        
@@ -14,7 +14,6 @@ class UpdateEmployeeComponent extends Component {
 
         this.changeFirstNameHandler = this.changeFirstNameHandler.bind(this);
         this.changeLastNameHandler = this.changeLastNameHandler.bind(this);
-        // this.changeEmailHandler = this.changeEmailHandler.bind(this);
         this.updateEmployee = this.updateEmployee.bind(this);
     }
 
@@ -46,8 +45,8 @@ class UpdateEmployeeComponent extends Component {
         console.log("employee => " + JSON.stringify(employee));
 
         EmployeeService.updateEmployee(employee, this.state.id).then(res => {
-            this.props.history.push("/employees")
-        })
+            this.props.history.push("/employees");
+        });
     }
 
     cancel() {
